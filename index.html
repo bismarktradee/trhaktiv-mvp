@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trhaktiv - Finanční Analýza</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 40px;
+        }
+        
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        
+        .step {
+            margin-bottom: 30px;
+        }
+        
+        .step-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .step-number {
+            background: #667eea;
+            color: white;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            margin-right: 12px;
+        }
+        
+        .step-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #333;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #555;
+        }
+        
+        input[type="text"],
+        input[type="number"] {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+        
+        input[type="text"]:focus,
+        input[type="number"]:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .btn {
+            background: #667eea;
+            color: white;
+            padding: 14px 28px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s;
+            width: 100%;
+        }
+        
+        .btn:hover {
+            background: #5568d3;
+        }
+        
+        .btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 20px;
+            display: none;
+        }
+        
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .company-info {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 20px;
+            display: none;
+        }
+        
+        .company-info h3 {
+            margin-bottom: 10px;
+            color: #333;
+        }
+        
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        
+        .info-row:last-child {
+            border-bottom: none;
+        }
+        
+        .info-label {
+            font-weight: 500;
+            color: #666;
+        }
+        
+        .info-value {
+            color: #333;
+        }
+        
+        .financial-form {
+            display: none;
+        }
+        
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+        
+        .helper-text {
+            font-size: 0.875rem;
+            color: #666;
+            margin-top: 5px;
+        }
+        
+        .pdf-links {
+            background: #fff3cd;
+            border: 1px solid #ffc107;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+        }
+        
+        .pdf-links h4 {
+            margin-bottom: 10px;
+            color: #856404;
+        }
+        
+        .pdf-link {
+            display: block;
+            color: #667eea;
+            text-decoration: none;
+            padding: 8px 0;
+            font-weight: 500;
+        }
+        
+        .pdf-link:hover {
+            text-decoration: underline;
+        }
+        
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Trhaktiv</h1>
+            <p>Finanční analýza a trojúhelník možností</p>
+        </div>
+        
+        <div class="card">
+            <!-- KROK 1: Zadání IČO -->
+            <div class="step" id="step1">
+                <div class="step-header">
+                    <div class="step-number">1</div>
+                    <div class="step-title">Zadejte IČO vaší firmy</div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="ico">IČO (8 číslic)</label>
+                    <input type="text" id="ico" placeholder="např. 27082440" maxlength="8">
+                    <div class="helper-text">Zadejte identifikační číslo vaší firmy</div>
+                </div>
+                
+                <button class="btn" onclick="searchCompany()">Vyhledat firmu</button>
+                
+                <div class="loading" id="loading1">
+                    <div class="spinner"></div>
+                    <p>Vyhledávám firmu...</p>
+                </div>
+                
+                <div class="company-info" id="companyInfo">
+                    <h3>Nalezená firma</h3>
+                    <div class="info-row">
+                        <span class="info-label">Název:</span>
+                        <span class="info-value" id="companyName"></span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">IČO:</span>
+                        <span class="info-value" id="companyIco"></span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Datum vzniku:</span>
+                        <span class="info-value" id="companyDate"></span>
+                    </div>
+                    
+                    <div id="pdfLinks" class="pdf-links hidden">
+                        <h4>📄 Nalezené účetní závěrky:</h4>
+                        <div id="pdfList"></div>
+                        <p class="helper-text" style="margin-top: 10px;">
+                            Otevřete si PDF a v dalším kroku zadejte klíčová čísla
+                        </p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- KROK 2: Zadání finančních dat -->
+            <div class="financial-form" id="step2">
+                <div class="step-header">
+                    <div class="step-number">2</div>
+                    <div class="step-title">Zadejte finanční data</div>
+                </div>
+                
+                <p class="helper-text" style="margin-bottom: 20px;">
+                    Zadejte čísla z vaší poslední účetní závěrky. Všechny částky v Kč.
+                </p>
+                
+                <div class="form-group">
+                    <label for="rok">Rok účetní závěrky</label>
+                    <input type="number" id="rok" placeholder="např. 2023" min="2000" max="2030">
+                </div>
+                
+                <h4 style="margin: 25px 0 15px; color: #667eea;">Rozvaha - Aktiva</h4>
+                <div class="grid-2">
+                    <div class="form-group">
+                        <label for="aktiva_celkem">Aktiva celkem *</label>
+                        <input type="number" id="aktiva_celkem" placeholder="0" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="kratkodoba_aktiva">Krátkodobá aktiva *</label>
+                        <input type="number" id="kratkodoba_aktiva" placeholder="0" required>
+                    </div>
+                </div>
+                
+                <h4 style="margin: 25px 0 15px; color: #667eea;">Rozvaha - Pasiva</h4>
+                <div class="grid-2">
+                    <div class="form-group">
+                        <label for="vlastni_kapital">Vlastní kapitál *</label>
+                        <input type="number" id="vlastni_kapital" placeholder="0" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="cizi_zdroje">Cizí zdroje *</label>
+                        <input type="number" id="cizi_zdroje" placeholder="0" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="kratkodobe_zavazky">Krátkodobé závazky *</label>
+                        <input type="number" id="kratkodobe_zavazky" placeholder="0" required>
+                    </div>
+                </div>
+                
+                <h4 style="margin: 25px 0 15px; color: #667eea;">Výsledovka</h4>
+                <div class="grid-2">
+                    <div class="form-group">
+                        <label for="trzby">Tržby *</label>
+                        <input type="number" id="trzby" placeholder="0" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="hospodarsky_vysledek">Hospodářský výsledek *</label>
+                        <input type="number" id="hospodarsky_vysledek" placeholder="0" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="ebit">EBIT</label>
+                        <input type="number" id="ebit" placeholder="0">
+                    </div>
+                </div>
+                
+                <button class="btn" onclick="analyzeCompany()" style="margin-top: 20px;">
+                    Vygenerovat analýzu
+                </button>
+                
+                <div class="loading" id="loading2">
+                    <div class="spinner"></div>
+                    <p>Generuji finanční analýzu...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        let companyData = null;
+        
+        async function searchCompany() {
+            const ico = document.getElementById('ico').value.trim();
+            
+            if (ico.length !== 8) {
+                alert('IČO musí mít 8 číslic');
+                return;
+            }
+            
+            document.getElementById('loading1').style.display = 'block';
+            document.querySelector('#step1 .btn').disabled = true;
+            
+            try {
+                const response = await fetch('/api/company/' + ico);
+                const data = await response.json();
+                
+                if (data.success) {
+                    companyData = data;
+                    
+                    document.getElementById('companyName').textContent = data.nazev;
+                    document.getElementById('companyIco').textContent = data.ico;
+                    document.getElementById('companyDate').textContent = data.datum_vzniku;
+                    document.getElementById('companyInfo').style.display = 'block';
+                    
+                    if (data.statements_found && data.statements.length > 0) {
+                        const pdfList = document.getElementById('pdfList');
+                        pdfList.innerHTML = '';
+                        
+                        data.statements.forEach(function(stmt) {
+                            if (stmt.pdf_url) {
+                                const link = document.createElement('a');
+                                link.href = stmt.pdf_url;
+                                link.target = '_blank';
+                                link.className = 'pdf-link';
+                                link.textContent = '📄 Účetní závěrka ' + stmt.rok;
+                                pdfList.appendChild(link);
+                            }
+                        });
+                        
+                        document.getElementById('pdfLinks').classList.remove('hidden');
+                    }
+                    
+                    setTimeout(function() {
+                        document.getElementById('step2').style.display = 'block';
+                        document.getElementById('step2').scrollIntoView({ behavior: 'smooth' });
+                    }, 500);
+                    
+                } else {
+                    alert('Firma nebyla nalezena: ' + data.error);
+                }
+                
+            } catch (error) {
+                alert('Chyba při vyhledávání: ' + error.message);
+            } finally {
+                document.getElementById('loading1').style.display = 'none';
+                document.querySelector('#step1 .btn').disabled = false;
+            }
+        }
+        
+        async function analyzeCompany() {
+            if (!companyData) {
+                alert('Nejdřív vyhledejte firmu');
+                return;
+            }
+            
+            const financialData = {
+                ico: companyData.ico,
+                financial_data: {
+                    rok: parseInt(document.getElementById('rok').value),
+                    aktiva_celkem: parseInt(document.getElementById('aktiva_celkem').value),
+                    kratkodoba_aktiva: parseInt(document.getElementById('kratkodoba_aktiva').value),
+                    vlastni_kapital: parseInt(document.getElementById('vlastni_kapital').value),
+                    cizi_zdroje: parseInt(document.getElementById('cizi_zdroje').value),
+                    kratkodobe_zavazky: parseInt(document.getElementById('kratkodobe_zavazky').value),
+                    trzby: parseInt(document.getElementById('trzby').value),
+                    hospodarsky_vysledek: parseInt(document.getElementById('hospodarsky_vysledek').value),
+                    ebit: parseInt(document.getElementById('ebit').value) || null,
+                    dlouhodoby_majetek: null,
+                    pohledavky: null,
+                    financni_majetek: null,
+                    pasiva_celkem: null,
+                    bankovni_uvery: null,
+                    vynosy_celkem: null,
+                    naklady_celkem: null,
+                    provozni_vysledek: null,
+                    financni_vysledek: null
+                }
+            };
+            
+            if (!financialData.financial_data.rok || 
+                !financialData.financial_data.aktiva_celkem ||
+                !financialData.financial_data.vlastni_kapital) {
+                alert('Vyplňte všechna povinná pole (označená *)');
+                return;
+            }
+            
+            document.getElementById('loading2').style.display = 'block';
+            document.querySelector('#step2 .btn').disabled = true;
+            
+            try {
+                const response = await fetch('/api/analyze', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(financialData)
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    window.location.href = '/report/' + data.report_id;
+                } else {
+                    alert('Chyba při analýze: ' + data.error);
+                }
+                
+            } catch (error) {
+                alert('Chyba při zpracování: ' + error.message);
+            } finally {
+                document.getElementById('loading2').style.display = 'none';
+                document.querySelector('#step2 .btn').disabled = false;
+            }
+        }
+    </script>
+</body>
+</html>
